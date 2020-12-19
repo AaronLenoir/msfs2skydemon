@@ -360,3 +360,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# msfs2skydemon
+src/references/SimConnect.dll
+src/references/SimConnect.cfg
+src/references/Microsoft.FlightSimulator.SimConnect.dll
