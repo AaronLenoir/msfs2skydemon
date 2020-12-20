@@ -10,9 +10,9 @@
   </Target>
 
   <ItemGroup>
-    <None Include="..\references\SimConnect.cfg" Link="SimConnect.cfg">
+    <Content Include="..\references\SimConnect.cfg" Link="SimConnect.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
     <None Include="..\references\SimConnect.dll" Link="SimConnect.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
