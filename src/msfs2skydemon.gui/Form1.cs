@@ -23,6 +23,54 @@ namespace msfs2skydemon.gui
         {
             _simConnectWrapper = new SimConnectWrapper(this.Name, this.Handle);
             _simConnectWrapper.OnEmitMessage += _simConnectWrapper_OnEmitMessage;
+            _simConnectWrapper.OnConnectionOpened += _simConnectWrapper_OnConnectionOpened;
+            _simConnectWrapper.OnConnectionLost += _simConnectWrapper_OnConnectionLost;
+            _simConnectWrapper.OnListeningStarted += _simConnectWrapper_OnListeningStarted;
+            _simConnectWrapper.OnListeningStopped += _simConnectWrapper_OnListeningStopped;
+            _simConnectWrapper.OnDataReceived += _simConnectWrapper_OnDataReceived;
+        }
+
+        DateTime _lastSendTime = DateTime.UtcNow;
+
+        private void _simConnectWrapper_OnDataReceived(uint key, double value)
+        {
+            if (_simConnectWrapper.LatestData.Count == 6 && DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds >= 1)
+            {
+                _lastSendTime = DateTime.UtcNow;
+
+                // We have all the data ...
+                var longtitude = _simConnectWrapper.LatestData[1];
+                var latitude = _simConnectWrapper.LatestData[2];
+                var altitudeInFeet = _simConnectWrapper.LatestData[4];
+                var altitudeInMeters = altitudeInFeet * 0.3048;
+                var headingTrue = _simConnectWrapper.LatestData[3];
+                var groundSpeed = _simConnectWrapper.LatestData[6];
+
+                var message = $"[{DateTime.UtcNow}] XGPSMSFS,{longtitude:F2},{latitude:F2},{altitudeInMeters:F1},{headingTrue:F2},{groundSpeed:F1}";
+                txtData.Text = message;
+            }
+
+            SetLastMessage($"Received data: {key} = {value} (total values: {_simConnectWrapper.LatestData.Count}) - (elapsed: {DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds})");
+        }
+
+        private void _simConnectWrapper_OnListeningStopped()
+        {
+            SetLastMessage("OnListeningStopped");
+        }
+
+        private void _simConnectWrapper_OnListeningStarted()
+        {
+            SetLastMessage("OnListeningStarted");
+        }
+
+        private void _simConnectWrapper_OnConnectionLost()
+        {
+            SetLastMessage("OnConnectionLost");
+        }
+
+        private void _simConnectWrapper_OnConnectionOpened()
+        {
+            SetLastMessage("OnConnectionOpened");
         }
 
         [System.Security.Permissions.PermissionSet(System.Security.Permissions.SecurityAction.Demand, Name = "FullTrust")]
@@ -42,7 +90,7 @@ namespace msfs2skydemon.gui
             {
                 if (_simConnectWrapper != null)
                 {
-                    _simConnectWrapper.Connect(Sim_OnRecvOpen, Sim_OnRecvQuit, Sim_OnRecvSimobjectDataBytype);
+                    _simConnectWrapper.Connect();
                     _simConnectWrapper.StartListening();
                     button1.Enabled = false;
                 }
@@ -60,25 +108,6 @@ namespace msfs2skydemon.gui
         private void SetLastMessage(string text)
         {
             txtLastMessage.Text = $"[{DateTime.UtcNow.ToString()}] {text}";
-        }
-
-        private void Sim_OnRecvSimobjectDataBytype(Microsoft.FlightSimulator.SimConnect.SimConnect sender, Microsoft.FlightSimulator.SimConnect.SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
-        {
-            this.txtData.Text = DateTime.UtcNow.ToString();
-
-            double dValue = (double)data.dwData[0];
-
-            this.txtData.Text = $"{data.dwRequestID}={dValue}";
-        }
-
-        private void Sim_OnRecvQuit(Microsoft.FlightSimulator.SimConnect.SimConnect sender, Microsoft.FlightSimulator.SimConnect.SIMCONNECT_RECV data)
-        {
-            this.txtQuit.Text = DateTime.UtcNow.ToString();
-        }
-
-        private void Sim_OnRecvOpen(Microsoft.FlightSimulator.SimConnect.SimConnect sender, Microsoft.FlightSimulator.SimConnect.SIMCONNECT_RECV_OPEN data)
-        {
-            this.txtOpen.Text = DateTime.UtcNow.ToString();
         }
     }
 }

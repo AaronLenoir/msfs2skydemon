@@ -12,13 +12,33 @@ namespace msfs2skydemon
 
     public class SimConnectWrapper : IDisposable
     {
+        #region Events
+
         public delegate void EmitMessageHandler(string message);
         public event EmitMessageHandler OnEmitMessage;
 
+        public delegate void OnConnectionOpenedHandler();
+        public event OnConnectionOpenedHandler OnConnectionOpened;
 
-        private void EmitMessage(string message)
+        public delegate void OnConnectionLostHandler();
+        public event OnConnectionLostHandler OnConnectionLost;
+
+        public delegate void OnListeningStartedHandler();
+        public event OnListeningStartedHandler OnListeningStarted;
+
+        public delegate void OnListeningStoppedHandler();
+        public event OnListeningStoppedHandler OnListeningStopped;
+
+        public delegate void OnDataReceivedHandler(uint key, double value);
+        public event OnDataReceivedHandler OnDataReceived;
+
+        #endregion
+
+        private bool _connected = false;
+
+        public Dictionary<uint, double> LatestData
         {
-            OnEmitMessage?.Invoke(message);
+            get;
         }
 
         public enum DUMMYENUM
@@ -33,9 +53,10 @@ namespace msfs2skydemon
         {
             {1,"PLANE LONGITUDE,degree" },
             {2,"PLANE LATITUDE,degree" },
-            {3,"PLANE HEADING DEGREES MAGNETIC,degree" },
+            {3,"PLANE HEADING DEGREES TRUE,degree" },
             {4,"PLANE ALTITUDE,feet" },
             {5,"AIRSPEED INDICATED,knots" },
+            {6,"GPS GROUND SPEED,knots" },
         };
 
         /// User-defined win32 event => put basically any number?
@@ -54,24 +75,38 @@ namespace msfs2skydemon
         {
             Title = title;
             Handle = handle;
+            LatestData = new Dictionary<uint, double>();
         }
 
-        public void Connect(RecvOpenEventHandler onReceiveOpenHandler,
-                            RecvQuitEventHandler onReceiveQuitHandler,
-                            RecvSimobjectDataBytypeEventHandler onReceiveDataHandler)
+        public void Connect()
         {
             Sim = new SimConnect(Title, Handle, WM_USER_SIMCONNECT, null, 0);
             Sim.OnRecvOpen += Sim_OnRecvOpen;
-            Sim.OnRecvOpen += onReceiveOpenHandler;
-            Sim.OnRecvQuit += onReceiveQuitHandler;
-            Sim.OnRecvSimobjectDataBytype += onReceiveDataHandler;
+            //Sim.OnRecvOpen += onReceiveOpenHandler;
+            //Sim.OnRecvQuit += onReceiveQuitHandler;
+            Sim.OnRecvSimobjectDataBytype += Sim_OnRecvSimobjectDataBytype;
 
-            EmitMessage("Connected!");
+            OnEmitMessage?.Invoke("Connected!");
+        }
+
+        private void Sim_OnRecvSimobjectDataBytype(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
+        {
+            double value = (double)data.dwData[0];
+            uint key = data.dwRequestID;
+
+            if (LatestData.ContainsKey(key))
+            {
+                LatestData[key] = value;
+            } else
+            {
+                LatestData.Add(key, value);
+            }
+
+            OnDataReceived?.Invoke(key, value);
         }
 
         private void Sim_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
         {
-            EmitMessage("Connection opened.");
 
             foreach (var toConnect in simConnectProperties)
             {
@@ -83,6 +118,10 @@ namespace msfs2skydemon
                 /// If you skip this step, you will only receive a uint in the .dwData field.
                 Sim.RegisterDataDefineStruct<double>((DUMMYENUM)toConnect.Key);
             }
+
+            OnEmitMessage?.Invoke("Connection opened.");
+            OnConnectionOpened?.Invoke();
+            _connected = true;
         }
 
         public void StartListening()
@@ -92,12 +131,26 @@ namespace msfs2skydemon
             _timer.Tick += _timer_Tick;
             _timer.Start();
 
-            EmitMessage("Timer started ...");
+            OnEmitMessage?.Invoke("Timer started ...");
+            OnListeningStarted?.Invoke();
+        }
+
+        public void StopListening()
+        {
+            if (_timer != null)
+            {
+                var localTimer = _timer;
+                _timer = null;
+                localTimer.Stop();
+                localTimer.Dispose();
+
+                OnListeningStopped?.Invoke();
+            }
         }
 
         private void _timer_Tick(object sender, EventArgs e)
         {
-            EmitMessage("Timer ticked ...");
+            OnEmitMessage?.Invoke("Timer ticked ...");
 
             try
             {
@@ -105,10 +158,18 @@ namespace msfs2skydemon
                 {
                     Sim.RequestDataOnSimObjectType((DUMMYENUM)toConnect.Key, (DUMMYENUM)toConnect.Key, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                 }
+
+                if (!_connected)
+                {
+                    _connected = true;
+                    OnConnectionOpened?.Invoke();
+                }
             }
             catch (Exception ex)
             {
-                EmitMessage($"Could not send Request for data: {ex.ToString()}");
+                OnEmitMessage?.Invoke($"Could not send Request for data: {ex.ToString()}");
+
+                OnConnectionLost?.Invoke();
             }
         }
 
@@ -121,7 +182,7 @@ namespace msfs2skydemon
                     Sim.ReceiveMessage();
                 } catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString());
+                    OnEmitMessage?.Invoke($"Could not receive message for data: {ex.ToString()}");
                 }
             }
         }
@@ -135,13 +196,7 @@ namespace msfs2skydemon
                 localSim.Dispose();
             }
 
-            if (_timer != null)
-            {
-                var localTimer = _timer;
-                _timer = null;
-                localTimer.Stop();
-                localTimer.Dispose();
-            }
+            StopListening();
         }
     }
 }

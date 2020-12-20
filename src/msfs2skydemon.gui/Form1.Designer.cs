@@ -93,7 +93,7 @@
             // 
             this.txtData.Location = new System.Drawing.Point(82, 104);
             this.txtData.Name = "txtData";
-            this.txtData.Size = new System.Drawing.Size(259, 20);
+            this.txtData.Size = new System.Drawing.Size(882, 20);
             this.txtData.TabIndex = 4;
             // 
             // txtLastMessage
@@ -101,14 +101,14 @@
             this.txtLastMessage.Location = new System.Drawing.Point(82, 149);
             this.txtLastMessage.Multiline = true;
             this.txtLastMessage.Name = "txtLastMessage";
-            this.txtLastMessage.Size = new System.Drawing.Size(706, 289);
+            this.txtLastMessage.Size = new System.Drawing.Size(882, 289);
             this.txtLastMessage.TabIndex = 5;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(976, 450);
             this.Controls.Add(this.txtLastMessage);
             this.Controls.Add(this.txtData);
             this.Controls.Add(this.txtQuit);
