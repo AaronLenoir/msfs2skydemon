@@ -1,0 +1,11 @@
+SimConnectWrapper:
+
+	- Events:
+		- OnConnectionStateChanged
+
+	- Methods:
+		- HandleWndProc
+
+	- Properties:
+		- LatestData
+
