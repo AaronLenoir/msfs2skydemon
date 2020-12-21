@@ -36,6 +36,7 @@
             this.txtQuit = new System.Windows.Forms.TextBox();
             this.txtData = new System.Windows.Forms.TextBox();
             this.txtLastMessage = new System.Windows.Forms.TextBox();
+            this.txtHost = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // button1
@@ -104,11 +105,20 @@
             this.txtLastMessage.Size = new System.Drawing.Size(882, 289);
             this.txtLastMessage.TabIndex = 5;
             // 
+            // txtHost
+            // 
+            this.txtHost.Location = new System.Drawing.Point(393, 38);
+            this.txtHost.Name = "txtHost";
+            this.txtHost.Size = new System.Drawing.Size(267, 20);
+            this.txtHost.TabIndex = 6;
+            this.txtHost.Text = "192.168.1.10";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(976, 450);
+            this.Controls.Add(this.txtHost);
             this.Controls.Add(this.txtLastMessage);
             this.Controls.Add(this.txtData);
             this.Controls.Add(this.txtQuit);
@@ -135,6 +145,7 @@
         private System.Windows.Forms.TextBox txtQuit;
         private System.Windows.Forms.TextBox txtData;
         private System.Windows.Forms.TextBox txtLastMessage;
+        private System.Windows.Forms.TextBox txtHost;
     }
 }
 

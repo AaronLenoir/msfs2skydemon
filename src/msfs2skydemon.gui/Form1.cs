@@ -46,8 +46,18 @@ namespace msfs2skydemon.gui
                 var headingTrue = _simConnectWrapper.LatestData[3];
                 var groundSpeed = _simConnectWrapper.LatestData[6];
 
-                var message = $"[{DateTime.UtcNow}] XGPSMSFS,{longtitude:F2},{latitude:F2},{altitudeInMeters:F1},{headingTrue:F2},{groundSpeed:F1}";
+                var xgpsMessage = $"XGPSMSFS,{longtitude:F2},{latitude:F2},{altitudeInMeters:F1},{headingTrue:F2},{groundSpeed:F1}";
+                var message = $"[{DateTime.UtcNow}] {xgpsMessage}";
                 txtData.Text = message;
+
+                try
+                {
+                    var udpMessage = new UdpMessage(txtHost.Text, 49002, xgpsMessage);
+                    udpMessage.Send();
+                } catch (Exception ex)
+                {
+                    SetLastMessage($"Could not send to UDP: {ex.ToString()}");
+                }
             }
 
             SetLastMessage($"Received data: {key} = {value} (total values: {_simConnectWrapper.LatestData.Count}) - (elapsed: {DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds})");
@@ -94,7 +104,8 @@ namespace msfs2skydemon.gui
                     _simConnectWrapper.StartListening();
                     button1.Enabled = false;
                 }
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 SetLastMessage($"Connection error: {ex.ToString()}");
             }
