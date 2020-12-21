@@ -5,6 +5,8 @@ namespace msfs2skydemon.gui
 {
     public partial class Form1 : Form
     {
+        private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private SimConnectWrapper _simConnectWrapper;
 
         private Timer _timer;
@@ -18,6 +20,8 @@ namespace msfs2skydemon.gui
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            Log.Debug("Loading form ...");
+
             _simConnectWrapper = new SimConnectWrapper(Name, Handle, 
                 new[] {
                     SimConnectProperties.PlaneLongitude,
@@ -35,7 +39,7 @@ namespace msfs2skydemon.gui
 
         private void CheckForData(object sender, EventArgs e)
         {
-            if (_simConnectWrapper.LatestData.Count == 6 && DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds >= 1)
+            if (DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds >= 1)
             {
                 var longitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLongitude];
                 var latitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLatitude];
@@ -43,16 +47,23 @@ namespace msfs2skydemon.gui
                 var headingTrue = _simConnectWrapper.LatestData[SimConnectProperties.PlaneHeadingDegreesTrue];
                 var groundSpeed = _simConnectWrapper.LatestData[SimConnectProperties.GpsGroundSpeed];
 
-                var xgpsMessage = $"XGPSMSFS,{longitude:F2},{latitude:F2},{altitude:F1},{headingTrue:F2},{groundSpeed:F1}";
-                txtData.Text = $"[{DateTime.UtcNow}] {xgpsMessage}";
-                try
+                if (longitude.HasValue && 
+                    latitude.HasValue && 
+                    altitude.HasValue &&
+                    headingTrue.HasValue &&
+                    groundSpeed.HasValue)
                 {
-                    var udpMessage = new UdpMessage(txtHost.Text, 49002, xgpsMessage);
-                    udpMessage.Send();
-                }
-                catch
-                {
-                    // TODO: *something*!
+                    var xgpsMessage = $"XGPSMSFS,{longitude:F2},{latitude:F2},{altitude:F1},{headingTrue:F2},{groundSpeed:F1}";
+                    txtData.Text = $"[{DateTime.UtcNow}] {xgpsMessage}";
+                    try
+                    {
+                        var udpMessage = new UdpMessage(txtHost.Text, 49002, xgpsMessage);
+                        udpMessage.Send();
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex);
+                    }
                 }
             }
         }

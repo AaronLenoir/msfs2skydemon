@@ -8,6 +8,8 @@ namespace msfs2skydemon.gui
 {
     public class SimConnectWrapper : IDisposable
     {
+        private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         // ID used to identify the SimConnect message in the Windows Message Loop
         private const int WM_USER_SIMCONNECT = 0x0402;
 
@@ -36,7 +38,12 @@ namespace msfs2skydemon.gui
             Title = title;
             Handle = handle;
             PropertiesToWatch = propertiesToWatch.ToList();
+
             LatestData = new Dictionary<SimConnectProperty, double?>();
+            foreach (var property in propertiesToWatch)
+            {
+                LatestData.Add(property, null);
+            }
 
             _timer = StartTimer();
         }
@@ -65,9 +72,15 @@ namespace msfs2skydemon.gui
                 {
                     _simConnect.RequestDataOnSimObjectType(property.Key, property.Key, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                 }
-            } catch
+            } catch (Exception ex)
             {
-                // TODO: *something*!
+                if (_simConnect != null)
+                {
+                    _simConnect.Dispose();
+                    _simConnect = null;
+                }
+
+                Log.Warn(ex);
             }
         }
 
@@ -91,9 +104,9 @@ namespace msfs2skydemon.gui
                 {
                     _simConnect.ReceiveMessage();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // TODO: *something*!
+                    Log.Warn(ex);
                 }
             }
         }
@@ -106,8 +119,6 @@ namespace msfs2skydemon.gui
 
                 // TODO: Support other data types and structs ...
                 _simConnect.RegisterDataDefineStruct<double>(property.Key);
-
-                LatestData.Add(property, null);
             }
 
             _opened = true;
