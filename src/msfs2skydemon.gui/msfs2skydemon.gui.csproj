@@ -58,6 +58,9 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimConnectProperties.cs" />
+    <Compile Include="SimConnectProperty.cs" />
+    <Compile Include="SimConnectPropertyKey.cs" />
     <Compile Include="SimConnectWrapper.cs" />
     <Compile Include="UdpMessage.cs" />
     <EmbeddedResource Include="Form1.resx">

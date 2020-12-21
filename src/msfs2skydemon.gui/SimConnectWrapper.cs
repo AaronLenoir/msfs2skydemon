@@ -1,202 +1,145 @@
 ﻿using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
-using static Microsoft.FlightSimulator.SimConnect.SimConnect;
 
-namespace msfs2skydemon
+namespace msfs2skydemon.gui
 {
-
-
     public class SimConnectWrapper : IDisposable
     {
-        #region Events
-
-        public delegate void EmitMessageHandler(string message);
-        public event EmitMessageHandler OnEmitMessage;
-
-        public delegate void OnConnectionOpenedHandler();
-        public event OnConnectionOpenedHandler OnConnectionOpened;
-
-        public delegate void OnConnectionLostHandler();
-        public event OnConnectionLostHandler OnConnectionLost;
-
-        public delegate void OnListeningStartedHandler();
-        public event OnListeningStartedHandler OnListeningStarted;
-
-        public delegate void OnListeningStoppedHandler();
-        public event OnListeningStoppedHandler OnListeningStopped;
-
-        public delegate void OnDataReceivedHandler(uint key, double value);
-        public event OnDataReceivedHandler OnDataReceived;
-
-        #endregion
-
-        private bool _connected = false;
-
-        public Dictionary<uint, double> LatestData
-        {
-            get;
-        }
-
-        public enum DUMMYENUM
-        {
-            Dummy = 0
-        }
-
-        /// <summary>
-        /// Contains the list of all the SimConnect properties we will read, the unit is separated by coma by our own code.
-        /// </summary>
-        Dictionary<int, string> simConnectProperties = new Dictionary<int, string>
-        {
-            {1,"PLANE LONGITUDE,degree" },
-            {2,"PLANE LATITUDE,degree" },
-            {3,"PLANE HEADING DEGREES TRUE,degree" },
-            {4,"PLANE ALTITUDE,feet" },
-            {5,"AIRSPEED INDICATED,knots" },
-            {6,"GPS GROUND SPEED,knots" },
-        };
-
-        /// User-defined win32 event => put basically any number?
+        // ID used to identify the SimConnect message in the Windows Message Loop
         private const int WM_USER_SIMCONNECT = 0x0402;
 
         public string Title { get; }
+
         public IntPtr Handle { get; }
+
         public SimConnect Sim { get; private set; }
+
+        public Dictionary<SimConnectProperty, double?> LatestData { get; }
+
+        public DateTime LastDataReceivedOn { get; private set; }
+
+        public List<SimConnectProperty> PropertiesToWatch { get; }
 
         private Timer _timer;
 
-        public SimConnectWrapper(string title) : this(title, Process.GetCurrentProcess().MainWindowHandle)
-        { }
+        private bool _opened = false;
 
-        public SimConnectWrapper(string title, IntPtr handle)
+        private SimConnect _simConnect;
+
+        public SimConnectWrapper(string title, 
+                                 IntPtr handle,
+                                 IEnumerable<SimConnectProperty> propertiesToWatch)
         {
             Title = title;
             Handle = handle;
-            LatestData = new Dictionary<uint, double>();
+            PropertiesToWatch = propertiesToWatch.ToList();
+            LatestData = new Dictionary<SimConnectProperty, double?>();
+
+            _timer = StartTimer();
         }
 
-        public void Connect()
+        private Timer StartTimer()
         {
-            Sim = new SimConnect(Title, Handle, WM_USER_SIMCONNECT, null, 0);
-            Sim.OnRecvOpen += Sim_OnRecvOpen;
-            //Sim.OnRecvOpen += onReceiveOpenHandler;
-            //Sim.OnRecvQuit += onReceiveQuitHandler;
-            Sim.OnRecvSimobjectDataBytype += Sim_OnRecvSimobjectDataBytype;
+            Timer timer = new Timer();
 
-            OnEmitMessage?.Invoke("Connected!");
+            timer = new Timer();
+            timer.Interval = 1000;
+            timer.Tick += GetData;
+            timer.Start();
+
+            return timer;
         }
 
-        private void Sim_OnRecvSimobjectDataBytype(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
+        private void GetData(object sender, EventArgs e)
         {
-            double value = (double)data.dwData[0];
-            uint key = data.dwRequestID;
-
-            if (LatestData.ContainsKey(key))
-            {
-                LatestData[key] = value;
-            } else
-            {
-                LatestData.Add(key, value);
-            }
-
-            OnDataReceived?.Invoke(key, value);
-        }
-
-        private void Sim_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
-        {
-
-            foreach (var toConnect in simConnectProperties)
-            {
-                var values = toConnect.Value.Split(new char[] { ',' });
-                /// Define a data structure
-                Sim.AddToDataDefinition((DUMMYENUM)toConnect.Key, values[0], values[1], SIMCONNECT_DATATYPE.FLOAT64, 0.0f, SimConnect.SIMCONNECT_UNUSED);
-                //GetLabelForUid(100 + toConnect.Key).Content = values[1];
-                /// IMPORTANT: Register it with the simconnect managed wrapper marshaller
-                /// If you skip this step, you will only receive a uint in the .dwData field.
-                Sim.RegisterDataDefineStruct<double>((DUMMYENUM)toConnect.Key);
-            }
-
-            OnEmitMessage?.Invoke("Connection opened.");
-            OnConnectionOpened?.Invoke();
-            _connected = true;
-        }
-
-        public void StartListening()
-        {
-            _timer = new Timer();
-            _timer.Interval = 1000;
-            _timer.Tick += _timer_Tick;
-            _timer.Start();
-
-            OnEmitMessage?.Invoke("Timer started ...");
-            OnListeningStarted?.Invoke();
-        }
-
-        public void StopListening()
-        {
-            if (_timer != null)
-            {
-                var localTimer = _timer;
-                _timer = null;
-                localTimer.Stop();
-                localTimer.Dispose();
-
-                OnListeningStopped?.Invoke();
-            }
-        }
-
-        private void _timer_Tick(object sender, EventArgs e)
-        {
-            OnEmitMessage?.Invoke("Timer ticked ...");
-
             try
             {
-                foreach (var toConnect in simConnectProperties)
-                {
-                    Sim.RequestDataOnSimObjectType((DUMMYENUM)toConnect.Key, (DUMMYENUM)toConnect.Key, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
-                }
+                var connection = GetConnection();
 
-                if (!_connected)
+                if (!_opened) { return; }
+
+                foreach (var property in PropertiesToWatch)
                 {
-                    _connected = true;
-                    OnConnectionOpened?.Invoke();
+                    _simConnect.RequestDataOnSimObjectType(property.Key, property.Key, 0, SIMCONNECT_SIMOBJECT_TYPE.USER);
                 }
-            }
-            catch (Exception ex)
+            } catch
             {
-                OnEmitMessage?.Invoke($"Could not send Request for data: {ex.ToString()}");
-
-                OnConnectionLost?.Invoke();
+                // TODO: *something*!
             }
+        }
+
+        private SimConnect GetConnection()
+        {
+            if (_simConnect == null)
+            {
+                _simConnect  = new SimConnect(Title, Handle, WM_USER_SIMCONNECT, null, 0);
+                _simConnect.OnRecvOpen += SimConnect_OnRecvOpen;
+                _simConnect.OnRecvSimobjectDataBytype += SimConnect_OnRecvSimobjectDataBytype;
+            }
+
+            return _simConnect;
         }
 
         public void HandleWndProc(ref Message messageData)
         {
-            if (messageData.Msg == WM_USER_SIMCONNECT && Sim != null)
+            if (messageData.Msg == WM_USER_SIMCONNECT && _simConnect != null)
             {
                 try
                 {
-                    Sim.ReceiveMessage();
-                } catch (Exception ex)
-                {
-                    OnEmitMessage?.Invoke($"Could not receive message for data: {ex.ToString()}");
+                    _simConnect.ReceiveMessage();
                 }
+                catch
+                {
+                    // TODO: *something*!
+                }
+            }
+        }
+
+        private void SimConnect_OnRecvOpen(SimConnect sender, SIMCONNECT_RECV_OPEN data)
+        {
+            foreach (var property in PropertiesToWatch)
+            {
+                _simConnect.AddToDataDefinition(property.Key, property.Name, property.Unit, property.SimConnectDataType, 0.0f, SimConnect.SIMCONNECT_UNUSED);
+
+                // TODO: Support other data types and structs ...
+                _simConnect.RegisterDataDefineStruct<double>(property.Key);
+
+                LatestData.Add(property, null);
+            }
+
+            _opened = true;
+        }
+
+        private void SimConnect_OnRecvSimobjectDataBytype(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
+        {
+            LastDataReceivedOn = DateTime.UtcNow;
+
+            // TODO: Support other data types and structs ...
+            double value = (double)data.dwData[0];
+
+            var property = PropertiesToWatch.SingleOrDefault(prop => (uint)prop.Key == data.dwRequestID);
+
+            if (!property.IsEmpty)
+            {
+                LatestData[property] = value;
             }
         }
 
         public void Dispose()
         {
-            if (Sim != null)
-            {
-                var localSim = Sim;
-                Sim = null;
-                localSim.Dispose();
+            if (_timer != null) {
+                _timer.Stop();
+                _timer.Dispose();
+                _timer = null;
             }
 
-            StopListening();
+            if (_simConnect != null) {
+                _simConnect.Dispose();
+                _simConnect = null;
+            }
         }
     }
 }
