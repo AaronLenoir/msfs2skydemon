@@ -28,123 +28,195 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txtOpen = new System.Windows.Forms.TextBox();
-            this.txtQuit = new System.Windows.Forms.TextBox();
-            this.txtData = new System.Windows.Forms.TextBox();
-            this.txtLastMessage = new System.Windows.Forms.TextBox();
             this.txtHost = new System.Windows.Forms.TextBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.txtConnectionStatus = new System.Windows.Forms.Label();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.chkBroadcast = new System.Windows.Forms.CheckBox();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.menuStrip2 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openLogsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.groupBox1.SuspendLayout();
+            this.groupBox2.SuspendLayout();
+            this.menuStrip2.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // txtHost
             // 
-            this.button1.Location = new System.Drawing.Point(12, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
+            this.txtHost.Location = new System.Drawing.Point(72, 17);
+            this.txtHost.Name = "txtHost";
+            this.txtHost.Size = new System.Drawing.Size(88, 20);
+            this.txtHost.TabIndex = 6;
+            this.txtHost.Text = "192.168.1.10";
+            this.txtHost.TextChanged += new System.EventHandler(this.TxtHost_TextChanged);
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.txtConnectionStatus);
+            this.groupBox1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox1.Location = new System.Drawing.Point(0, 24);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(780, 39);
+            this.groupBox1.TabIndex = 7;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Flight Simulator";
+            // 
+            // txtConnectionStatus
+            // 
+            this.txtConnectionStatus.AutoSize = true;
+            this.txtConnectionStatus.ForeColor = System.Drawing.Color.IndianRed;
+            this.txtConnectionStatus.Location = new System.Drawing.Point(12, 16);
+            this.txtConnectionStatus.Name = "txtConnectionStatus";
+            this.txtConnectionStatus.Size = new System.Drawing.Size(73, 13);
+            this.txtConnectionStatus.TabIndex = 0;
+            this.txtConnectionStatus.Text = "Connecting ...";
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.statusStrip1);
+            this.groupBox2.Controls.Add(this.chkBroadcast);
+            this.groupBox2.Controls.Add(this.label1);
+            this.groupBox2.Controls.Add(this.txtHost);
+            this.groupBox2.Controls.Add(this.menuStrip1);
+            this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.groupBox2.Location = new System.Drawing.Point(0, 63);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(780, 70);
+            this.groupBox2.TabIndex = 8;
+            this.groupBox2.TabStop = false;
+            this.groupBox2.Text = "Skydemon";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(41, 41);
+            this.label1.Location = new System.Drawing.Point(12, 20);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(33, 13);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "Open";
+            this.label1.Size = new System.Drawing.Size(54, 13);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Target IP:";
             // 
-            // label2
+            // chkBroadcast
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(41, 72);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(26, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "Quit";
+            this.chkBroadcast.AutoSize = true;
+            this.chkBroadcast.Location = new System.Drawing.Point(166, 19);
+            this.chkBroadcast.Name = "chkBroadcast";
+            this.chkBroadcast.Size = new System.Drawing.Size(74, 17);
+            this.chkBroadcast.TabIndex = 8;
+            this.chkBroadcast.Text = "Broadcast";
+            this.chkBroadcast.UseVisualStyleBackColor = true;
+            this.chkBroadcast.CheckedChanged += new System.EventHandler(this.ChkBroadcast_CheckedChanged);
             // 
-            // label3
+            // menuStrip1
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(41, 107);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(30, 13);
-            this.label3.TabIndex = 3;
-            this.label3.Text = "Data";
+            this.menuStrip1.Location = new System.Drawing.Point(3, 16);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(774, 24);
+            this.menuStrip1.TabIndex = 9;
+            this.menuStrip1.Text = "menuStrip1";
             // 
-            // txtOpen
+            // menuStrip2
             // 
-            this.txtOpen.Location = new System.Drawing.Point(82, 38);
-            this.txtOpen.Name = "txtOpen";
-            this.txtOpen.Size = new System.Drawing.Size(259, 20);
-            this.txtOpen.TabIndex = 4;
+            this.menuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.helpToolStripMenuItem});
+            this.menuStrip2.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip2.Name = "menuStrip2";
+            this.menuStrip2.Size = new System.Drawing.Size(780, 24);
+            this.menuStrip2.TabIndex = 9;
+            this.menuStrip2.Text = "menuStrip2";
             // 
-            // txtQuit
+            // fileToolStripMenuItem
             // 
-            this.txtQuit.Location = new System.Drawing.Point(82, 69);
-            this.txtQuit.Name = "txtQuit";
-            this.txtQuit.Size = new System.Drawing.Size(259, 20);
-            this.txtQuit.TabIndex = 4;
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Text = "File";
             // 
-            // txtData
+            // exitToolStripMenuItem
             // 
-            this.txtData.Location = new System.Drawing.Point(82, 104);
-            this.txtData.Name = "txtData";
-            this.txtData.Size = new System.Drawing.Size(882, 20);
-            this.txtData.TabIndex = 4;
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
-            // txtLastMessage
+            // helpToolStripMenuItem
             // 
-            this.txtLastMessage.Location = new System.Drawing.Point(82, 149);
-            this.txtLastMessage.Multiline = true;
-            this.txtLastMessage.Name = "txtLastMessage";
-            this.txtLastMessage.Size = new System.Drawing.Size(882, 289);
-            this.txtLastMessage.TabIndex = 5;
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openLogsToolStripMenuItem});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "Help";
             // 
-            // txtHost
+            // openLogsToolStripMenuItem
             // 
-            this.txtHost.Location = new System.Drawing.Point(393, 38);
-            this.txtHost.Name = "txtHost";
-            this.txtHost.Size = new System.Drawing.Size(267, 20);
-            this.txtHost.TabIndex = 6;
-            this.txtHost.Text = "192.168.1.10";
+            this.openLogsToolStripMenuItem.Name = "openLogsToolStripMenuItem";
+            this.openLogsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openLogsToolStripMenuItem.Text = "Open log file";
+            this.openLogsToolStripMenuItem.Click += new System.EventHandler(this.OpenLogsToolStripMenuItem_Click);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1});
+            this.statusStrip1.Location = new System.Drawing.Point(3, 45);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(774, 22);
+            this.statusStrip1.TabIndex = 10;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(422, 17);
+            this.toolStripStatusLabel1.Text = "msfs2skydemon - Not associated with Skydemon or Microsoft Flight Simulator";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(976, 450);
-            this.Controls.Add(this.txtHost);
-            this.Controls.Add(this.txtLastMessage);
-            this.Controls.Add(this.txtData);
-            this.Controls.Add(this.txtQuit);
-            this.Controls.Add(this.txtOpen);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.button1);
+            this.ClientSize = new System.Drawing.Size(780, 133);
+            this.Controls.Add(this.groupBox2);
+            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.menuStrip2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            this.menuStrip2.ResumeLayout(false);
+            this.menuStrip2.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox txtOpen;
-        private System.Windows.Forms.TextBox txtQuit;
-        private System.Windows.Forms.TextBox txtData;
-        private System.Windows.Forms.TextBox txtLastMessage;
         private System.Windows.Forms.TextBox txtHost;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Label txtConnectionStatus;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.CheckBox chkBroadcast;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.MenuStrip menuStrip2;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openLogsToolStripMenuItem;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
     }
 }
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace msfs2skydemon.gui
@@ -35,10 +37,21 @@ namespace msfs2skydemon.gui
             _timer.Interval = 1000;
             _timer.Tick += CheckForData;
             _timer.Start();
+
+            chkBroadcast.Checked = Properties.Settings.Default.UdpBroadcast;
+            txtHost.Text = Properties.Settings.Default.UdpTargetHost;
         }
 
         private void CheckForData(object sender, EventArgs e)
         {
+            if (DateTime.UtcNow.Subtract(_simConnectWrapper.LastDataReceivedOn).TotalSeconds >= 5)
+            {
+                SetConnectionStatus(false);
+                return;
+            }
+
+            SetConnectionStatus(true);
+
             if (DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds >= 1)
             {
                 var longitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLongitude];
@@ -53,11 +66,15 @@ namespace msfs2skydemon.gui
                     headingTrue.HasValue &&
                     groundSpeed.HasValue)
                 {
-                    var xgpsMessage = $"XGPSMSFS,{longitude:F2},{latitude:F2},{altitude:F1},{headingTrue:F2},{groundSpeed:F1}";
-                    txtData.Text = $"[{DateTime.UtcNow}] {xgpsMessage}";
+                    var xgpsMessage = $"XGPSMSFS,{longitude:F6},{latitude:F6},{altitude:F1},{headingTrue:F2},{groundSpeed:F6}";
                     try
                     {
-                        var udpMessage = new UdpMessage(txtHost.Text, 49002, xgpsMessage);
+                        var host = txtHost.Text;
+                        if (chkBroadcast.Checked) { host = "255.255.255.255"; }
+
+                        Log.Debug($"Send '{xgpsMessage}' to {host}");
+
+                        var udpMessage = new UdpMessage(host, 49002, xgpsMessage);
                         udpMessage.Send();
                     }
                     catch (Exception ex)
@@ -65,6 +82,19 @@ namespace msfs2skydemon.gui
                         Log.Error(ex);
                     }
                 }
+            }
+        }
+
+        private void SetConnectionStatus(bool connectionOk)
+        {
+            if (connectionOk)
+            {
+                txtConnectionStatus.Text = "Connected";
+                txtConnectionStatus.ForeColor = Color.LimeGreen;
+            } else
+            {
+                txtConnectionStatus.Text = "Connecting ...";
+                txtConnectionStatus.ForeColor = Color.DarkRed;
             }
         }
 
@@ -77,6 +107,30 @@ namespace msfs2skydemon.gui
             }
 
             base.WndProc(ref m);
+        }
+
+        private void ChkBroadcast_CheckedChanged(object sender, EventArgs e)
+        {
+            txtHost.Enabled = !chkBroadcast.Checked;
+            Properties.Settings.Default.UdpBroadcast = chkBroadcast.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void TxtHost_TextChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.UdpTargetHost = txtHost.Text;
+            Properties.Settings.Default.Save();
+        }
+
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _simConnectWrapper.Dispose();
+            Application.Exit();
+        }
+
+        private void OpenLogsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Process.Start("msfs2skydemon.log.txt");
         }
     }
 }

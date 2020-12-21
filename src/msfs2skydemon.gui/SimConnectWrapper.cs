@@ -39,6 +39,8 @@ namespace msfs2skydemon.gui
             Handle = handle;
             PropertiesToWatch = propertiesToWatch.ToList();
 
+            LastDataReceivedOn = DateTime.UtcNow.AddYears(-100);
+
             LatestData = new Dictionary<SimConnectProperty, double?>();
             foreach (var property in propertiesToWatch)
             {
