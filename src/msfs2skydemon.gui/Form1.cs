@@ -94,7 +94,13 @@ namespace msfs2skydemon.gui
             } else
             {
                 txtConnectionStatus.Text = "Connecting ...";
-                txtConnectionStatus.ForeColor = Color.DarkRed;
+                if (txtConnectionStatus.ForeColor == Color.DarkRed)
+                {
+                    txtConnectionStatus.ForeColor = Color.IndianRed;
+                } else
+                {
+                    txtConnectionStatus.ForeColor = Color.DarkRed;
+                }
             }
         }
 
