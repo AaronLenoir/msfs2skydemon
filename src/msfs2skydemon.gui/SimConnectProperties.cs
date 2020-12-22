@@ -11,7 +11,7 @@ namespace msfs2skydemon.gui
         public static SimConnectProperty PlaneHeadingDegreesTrue = new SimConnectProperty(
             SimConnectPropertyKey.PlaneHeadingDegreesTrue, "PLANE HEADING DEGREES TRUE", "degree", SIMCONNECT_DATATYPE.FLOAT64);
         public static SimConnectProperty PlaneAltitude = new SimConnectProperty(
-            SimConnectPropertyKey.PlaneAltitude, "PLANE ALTITUDE", "degree", SIMCONNECT_DATATYPE.FLOAT64);
+            SimConnectPropertyKey.PlaneAltitude, "PLANE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64);
         public static SimConnectProperty GpsGroundSpeed = new SimConnectProperty(
             SimConnectPropertyKey.GpsGroundSpeed, "GPS GROUND SPEED", "knots", SIMCONNECT_DATATYPE.FLOAT64);
     }
