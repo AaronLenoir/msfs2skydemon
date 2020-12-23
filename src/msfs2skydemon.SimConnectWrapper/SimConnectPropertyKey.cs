@@ -1,4 +1,4 @@
-﻿namespace msfs2skydemon.gui
+﻿namespace msfs2skydemon.SimConnectWrapper
 {
 	public enum SimConnectPropertyKey
 	{

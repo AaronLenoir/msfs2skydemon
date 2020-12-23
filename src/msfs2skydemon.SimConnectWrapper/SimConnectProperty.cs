@@ -1,7 +1,7 @@
 ﻿using Microsoft.FlightSimulator.SimConnect;
 using System;
 
-namespace msfs2skydemon.gui
+namespace msfs2skydemon.SimConnectWrapper
 {
 	public struct SimConnectProperty
 	{

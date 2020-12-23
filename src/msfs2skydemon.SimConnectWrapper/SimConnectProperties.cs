@@ -1,6 +1,6 @@
 ﻿using Microsoft.FlightSimulator.SimConnect;
 
-namespace msfs2skydemon.gui
+namespace msfs2skydemon.SimConnectWrapper
 {
     public class SimConnectProperties
     {

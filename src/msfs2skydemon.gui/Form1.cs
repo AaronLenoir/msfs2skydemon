@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using msfs2skydemon.SimConnectWrapper;
 
 namespace msfs2skydemon.gui
 {
@@ -9,7 +10,7 @@ namespace msfs2skydemon.gui
     {
         private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private SimConnectWrapper _simConnectWrapper;
+        private SimConnectWrapper.SimConnectWrapper _simConnectWrapper;
 
         private Timer _timer;
 
@@ -24,7 +25,7 @@ namespace msfs2skydemon.gui
         {
             Log.Debug("Loading form ...");
 
-            _simConnectWrapper = new SimConnectWrapper(Name, Handle, 
+            _simConnectWrapper = new SimConnectWrapper.SimConnectWrapper(Name, Handle, this,
                 new[] {
                     SimConnectProperties.PlaneLongitude,
                     SimConnectProperties.PlaneLatitude,
@@ -109,7 +110,8 @@ namespace msfs2skydemon.gui
         {
             if (_simConnectWrapper != null)
             {
-                _simConnectWrapper.HandleWndProc(ref m);
+                var message = new WindowMessageWrapper(m.HWnd, m.Msg, m.WParam, m.LParam, m.Result);
+                _simConnectWrapper.HandleWndProc(message);
             }
 
             base.WndProc(ref m);

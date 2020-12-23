@@ -1,14 +1,15 @@
 ﻿using Microsoft.FlightSimulator.SimConnect;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Windows.Forms;
+using System.Timers;
 
-namespace msfs2skydemon.gui
+namespace msfs2skydemon.SimConnectWrapper
 {
     public class SimConnectWrapper : IDisposable
     {
-        private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        //private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         // ID used to identify the SimConnect message in the Windows Message Loop
         private const int WM_USER_SIMCONNECT = 0x0402;
@@ -27,16 +28,20 @@ namespace msfs2skydemon.gui
 
         private Timer _timer;
 
+        private ISynchronizeInvoke _synchronizationObject;
+
         private bool _opened = false;
 
         private SimConnect _simConnect;
 
         public SimConnectWrapper(string title, 
                                  IntPtr handle,
+                                 ISynchronizeInvoke synchronizationObject,
                                  IEnumerable<SimConnectProperty> propertiesToWatch)
         {
             Title = title;
             Handle = handle;
+            _synchronizationObject = synchronizationObject;
             PropertiesToWatch = propertiesToWatch.ToList();
 
             LastDataReceivedOn = DateTime.UtcNow.AddYears(-100);
@@ -56,7 +61,8 @@ namespace msfs2skydemon.gui
 
             timer = new Timer();
             timer.Interval = 1000;
-            timer.Tick += GetData;
+            timer.Elapsed += GetData;
+            timer.SynchronizingObject = _synchronizationObject;
             timer.Start();
 
             return timer;
@@ -82,7 +88,7 @@ namespace msfs2skydemon.gui
                     _simConnect = null;
                 }
 
-                Log.Warn(ex);
+                //Log.Warn(ex);
             }
         }
 
@@ -98,7 +104,7 @@ namespace msfs2skydemon.gui
             return _simConnect;
         }
 
-        public void HandleWndProc(ref Message messageData)
+        public void HandleWndProc(IWindowsMessage messageData)
         {
             if (messageData.Msg == WM_USER_SIMCONNECT && _simConnect != null)
             {
@@ -108,7 +114,7 @@ namespace msfs2skydemon.gui
                 }
                 catch (Exception ex)
                 {
-                    Log.Warn(ex);
+                    // Log.Warn(ex);
                 }
             }
         }
