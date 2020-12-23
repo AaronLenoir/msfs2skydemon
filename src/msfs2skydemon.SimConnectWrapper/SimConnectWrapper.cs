@@ -104,9 +104,9 @@ namespace msfs2skydemon.SimConnectWrapper
             return _simConnect;
         }
 
-        public void HandleWndProc(IWindowsMessage messageData)
+        public void HandleWndProc(int msg)
         {
-            if (messageData.Msg == WM_USER_SIMCONNECT && _simConnect != null)
+            if (msg == WM_USER_SIMCONNECT && _simConnect != null)
             {
                 try
                 {

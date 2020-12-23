@@ -110,8 +110,7 @@ namespace msfs2skydemon.gui
         {
             if (_simConnectWrapper != null)
             {
-                var message = new WindowMessageWrapper(m.HWnd, m.Msg, m.WParam, m.LParam, m.Result);
-                _simConnectWrapper.HandleWndProc(message);
+                _simConnectWrapper.HandleWndProc(m.Msg);
             }
 
             base.WndProc(ref m);
