@@ -33,6 +33,7 @@ namespace msfs2skydemon.gui
                     SimConnectProperties.PlaneHeadingDegreesTrue,
                     SimConnectProperties.GpsGroundSpeed
                 });
+            _simConnectWrapper.OnError += _simConnectWrapper_OnError;
 
             _timer = new Timer();
             _timer.Interval = 1000;
@@ -138,6 +139,11 @@ namespace msfs2skydemon.gui
         private void OpenLogsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Process.Start("msfs2skydemon.log.txt");
+        }
+
+        private void _simConnectWrapper_OnError(object sender, Exception exception)
+        {
+            Log.Error(exception);
         }
     }
 }

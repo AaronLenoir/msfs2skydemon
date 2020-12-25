@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Timers;
+using Microsoft.Extensions.Logging;
 
 namespace msfs2skydemon.SimConnectWrapper
 {
     public class SimConnectWrapper : IDisposable
     {
-        //private static readonly log4net.ILog Log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        public event EventHandler<Exception> OnError;
 
         // ID used to identify the SimConnect message in the Windows Message Loop
         private const int WM_USER_SIMCONNECT = 0x0402;
@@ -88,7 +89,7 @@ namespace msfs2skydemon.SimConnectWrapper
                     _simConnect = null;
                 }
 
-                //Log.Warn(ex);
+                OnError?.Invoke(this, ex);
             }
         }
 
@@ -114,7 +115,7 @@ namespace msfs2skydemon.SimConnectWrapper
                 }
                 catch (Exception ex)
                 {
-                    // Log.Warn(ex);
+                    OnError?.Invoke(this, ex);
                 }
             }
         }
