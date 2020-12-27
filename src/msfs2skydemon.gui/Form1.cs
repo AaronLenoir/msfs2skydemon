@@ -31,7 +31,8 @@ namespace msfs2skydemon.gui
                     SimConnectProperties.PlaneLatitude,
                     SimConnectProperties.PlaneAltitude,
                     SimConnectProperties.PlaneHeadingDegreesTrue,
-                    SimConnectProperties.GpsGroundSpeed
+                    SimConnectProperties.GpsGroundSpeed,
+                    SimConnectProperties.AtcId
                 });
             _simConnectWrapper.OnError += _simConnectWrapper_OnError;
 
@@ -56,11 +57,21 @@ namespace msfs2skydemon.gui
 
             if (DateTime.UtcNow.Subtract(_lastSendTime).TotalSeconds >= 1)
             {
-                var longitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLongitude];
-                var latitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLatitude];
-                var altitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneAltitude] * 0.3048;
-                var headingTrue = _simConnectWrapper.LatestData[SimConnectProperties.PlaneHeadingDegreesTrue];
-                var groundSpeed = _simConnectWrapper.LatestData[SimConnectProperties.GpsGroundSpeed];
+                var longitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLongitude].DoubleValue;
+                var latitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneLatitude].DoubleValue;
+                var altitude = _simConnectWrapper.LatestData[SimConnectProperties.PlaneAltitude].DoubleValue * 0.3048;
+                var headingTrue = _simConnectWrapper.LatestData[SimConnectProperties.PlaneHeadingDegreesTrue].DoubleValue;
+                var groundSpeed = _simConnectWrapper.LatestData[SimConnectProperties.GpsGroundSpeed].DoubleValue;
+                var atcId = _simConnectWrapper.LatestData[SimConnectProperties.AtcId].RawValue;
+
+                if (atcId == null)
+                {
+                    Log.Debug($"No ATC TYPE ...");
+                } else
+                {
+                    Log.Debug($"ATC TYPE DataType: {atcId.GetType().FullName}");
+                    Log.Debug($"ATC TYPE: {atcId.ToString()}");
+                }
 
                 if (longitude.HasValue && 
                     latitude.HasValue && 

@@ -5,9 +5,16 @@ using System.ComponentModel;
 using System.Linq;
 using System.Timers;
 using Microsoft.Extensions.Logging;
+using System.Runtime.InteropServices;
 
 namespace msfs2skydemon.SimConnectWrapper
 {
+    
+    public struct String64
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        public string Value;
+    }
     public class SimConnectWrapper : IDisposable
     {
         public event EventHandler<Exception> OnError;
@@ -21,7 +28,7 @@ namespace msfs2skydemon.SimConnectWrapper
 
         public SimConnect Sim { get; private set; }
 
-        public Dictionary<SimConnectProperty, double?> LatestData { get; }
+        public Dictionary<SimConnectProperty, SimConnectPropertyValue> LatestData { get; }
 
         public DateTime LastDataReceivedOn { get; private set; }
 
@@ -35,7 +42,7 @@ namespace msfs2skydemon.SimConnectWrapper
 
         private SimConnect _simConnect;
 
-        public SimConnectWrapper(string title, 
+        public SimConnectWrapper(string title,
                                  IntPtr handle,
                                  ISynchronizeInvoke synchronizationObject,
                                  IEnumerable<SimConnectProperty> propertiesToWatch)
@@ -47,10 +54,10 @@ namespace msfs2skydemon.SimConnectWrapper
 
             LastDataReceivedOn = DateTime.UtcNow.AddYears(-100);
 
-            LatestData = new Dictionary<SimConnectProperty, double?>();
+            LatestData = new Dictionary<SimConnectProperty, SimConnectPropertyValue>();
             foreach (var property in propertiesToWatch)
             {
-                LatestData.Add(property, null);
+                LatestData.Add(property, new SimConnectPropertyValue());
             }
 
             _timer = StartTimer();
@@ -127,7 +134,13 @@ namespace msfs2skydemon.SimConnectWrapper
                 _simConnect.AddToDataDefinition(property.Key, property.Name, property.Unit, property.SimConnectDataType, 0.0f, SimConnect.SIMCONNECT_UNUSED);
 
                 // TODO: Support other data types and structs ...
-                _simConnect.RegisterDataDefineStruct<double>(property.Key);
+                if (property.SimConnectDataType == SIMCONNECT_DATATYPE.STRING64)
+                {
+                    _simConnect.RegisterDataDefineStruct<String64> (property.Key);
+                } else
+                {
+                    _simConnect.RegisterDataDefineStruct<double>(property.Key);
+                }
             }
 
             _opened = true;
@@ -138,13 +151,17 @@ namespace msfs2skydemon.SimConnectWrapper
             LastDataReceivedOn = DateTime.UtcNow;
 
             // TODO: Support other data types and structs ...
-            double value = (double)data.dwData[0];
-
             var property = PropertiesToWatch.SingleOrDefault(prop => (uint)prop.Key == data.dwRequestID);
 
             if (!property.IsEmpty)
             {
-                LatestData[property] = value;
+                if (property.SimConnectDataType == SIMCONNECT_DATATYPE.STRING64)
+                {
+                    LatestData[property] = new SimConnectPropertyValue(((String64)data.dwData[0]).Value);
+                } else
+                {
+                    LatestData[property] = new SimConnectPropertyValue(data.dwData[0]);
+                }
             }
         }
 

@@ -14,5 +14,9 @@ namespace msfs2skydemon.SimConnectWrapper
             SimConnectPropertyKey.PlaneAltitude, "PLANE ALTITUDE", "feet", SIMCONNECT_DATATYPE.FLOAT64);
         public static SimConnectProperty GpsGroundSpeed = new SimConnectProperty(
             SimConnectPropertyKey.GpsGroundSpeed, "GPS GROUND SPEED", "knots", SIMCONNECT_DATATYPE.FLOAT64);
+        public static SimConnectProperty AtcId = new SimConnectProperty(
+            SimConnectPropertyKey.AtcId, "ATC ID", "", SIMCONNECT_DATATYPE.STRING64);
+        public static SimConnectProperty AtcType = new SimConnectProperty(
+            SimConnectPropertyKey.AtcType, "ATC TYPE", "", SIMCONNECT_DATATYPE.STRING64);
     }
 }

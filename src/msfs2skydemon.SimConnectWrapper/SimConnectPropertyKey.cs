@@ -7,6 +7,8 @@
 		PlaneLatitude = 2,
         PlaneHeadingDegreesTrue = 3,
         PlaneAltitude = 4,
-        GpsGroundSpeed = 5
+        GpsGroundSpeed = 5,
+        AtcId = 6,
+        AtcType = 7
     }
 }
