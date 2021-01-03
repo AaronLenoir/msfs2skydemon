@@ -9,12 +9,45 @@ using System.Runtime.InteropServices;
 
 namespace msfs2skydemon.SimConnectWrapper
 {
-    
+    // SIMCONNECT_DATATYPE
+    public struct String8
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 8)]
+        public string Value;
+    }
+
+    public struct String32
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string Value;
+    }
+
     public struct String64
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
         public string Value;
     }
+
+    public struct String128
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+        public string Value;
+    }
+
+    public struct String256
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string Value;
+    }
+
+    public struct String260
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+        public string Value;
+    }
+
+    // TODO: STRINGV?
+
     public class SimConnectWrapper : IDisposable
     {
         public event EventHandler<Exception> OnError;
@@ -146,6 +179,46 @@ namespace msfs2skydemon.SimConnectWrapper
             _opened = true;
         }
 
+        private void RegisterDataDefineStruct(SIMCONNECT_DATATYPE dataType, SimConnectPropertyKey key)
+        {
+            if (dataType == SIMCONNECT_DATATYPE.STRING8)
+            {
+                _simConnect.RegisterDataDefineStruct<String8>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.STRING32)
+            {
+                _simConnect.RegisterDataDefineStruct<String32>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.STRING64)
+            {
+                _simConnect.RegisterDataDefineStruct<String64>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.STRING128)
+            {
+                _simConnect.RegisterDataDefineStruct<String128>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.STRING256)
+            {
+                _simConnect.RegisterDataDefineStruct<String256>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.STRING260)
+            {
+                _simConnect.RegisterDataDefineStruct<String260>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.INT32)
+            {
+                _simConnect.RegisterDataDefineStruct<Int32>(key);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.INT64)
+            {
+                _simConnect.RegisterDataDefineStruct<Int64>(key);
+            }
+            else
+            {
+                _simConnect.RegisterDataDefineStruct<double>(key);
+            }
+        }
+
         private void SimConnect_OnRecvSimobjectDataBytype(SimConnect sender, SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data)
         {
             LastDataReceivedOn = DateTime.UtcNow;
@@ -155,13 +228,23 @@ namespace msfs2skydemon.SimConnectWrapper
 
             if (!property.IsEmpty)
             {
-                if (property.SimConnectDataType == SIMCONNECT_DATATYPE.STRING64)
-                {
-                    LatestData[property] = new SimConnectPropertyValue(((String64)data.dwData[0]).Value);
-                } else
-                {
-                    LatestData[property] = new SimConnectPropertyValue(data.dwData[0]);
-                }
+                LatestData[property] = GetValue(data, property.SimConnectDataType);
+            }
+        }
+
+        private SimConnectPropertyValue GetValue(SIMCONNECT_RECV_SIMOBJECT_DATA_BYTYPE data, SIMCONNECT_DATATYPE dataType)
+        {
+            if (dataType == SIMCONNECT_DATATYPE.STRING8)
+            {
+                return new SimConnectPropertyValue(((String8)data.dwData[0]).Value);
+            }
+            else if (dataType == SIMCONNECT_DATATYPE.STRING64)
+            {
+                return new SimConnectPropertyValue(((String64)data.dwData[0]).Value);
+            }
+            else
+            {
+                return new SimConnectPropertyValue(data.dwData[0]);
             }
         }
 
